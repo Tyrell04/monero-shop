@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  api:
+    build:
+        context: .
+        dockerfile: docker/dev.Dockerfile
+    container_name: api_dev
+    restart: always
+    volumes:
+        - .:/app
+    ports:
+        - "8000:8000"
+  postgres:
+    image: postgres:latest
+    container_name: postgres_dev
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+
+volumes:
+  postgres_data:
