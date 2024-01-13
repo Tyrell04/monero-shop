@@ -10,12 +10,11 @@ type Config struct {
 }
 
 type Server struct {
-	Port    string `mapstructure:"port"`
-	UserKey string `mapstructure:"user_key"`
+	Port string `mapstructure:"port"`
 }
 
 type CorsConfig struct {
-	AllowOrigins string
+	AllowOrigins string `mapstructure:"allow_origins"`
 }
 
 type Database struct {
