@@ -1,0 +1,17 @@
+cors:
+  allowOrigins: "*"
+server:
+  port: 8000
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: postgres
+  dbName: postgres
+  sslMode: disable
+  maxIdleConns: 15
+  maxOpenConns: 100
+  connMaxLifetime: 5
+jwt:
+  secret: "mySecretKey"
+  access_token_expire_duration: 1000
