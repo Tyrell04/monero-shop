@@ -7,6 +7,7 @@ type Config struct {
 	Jwt      Jwt        `mapstructure:"jwt"`
 	Server   Server     `mapstructure:"server"`
 	Cors     CorsConfig `mapstructure:"cors"`
+	Argon2   Argon2     `mapstructure:"argon2"`
 }
 
 type Server struct {
@@ -15,6 +16,14 @@ type Server struct {
 
 type CorsConfig struct {
 	AllowOrigins string `mapstructure:"allow_origins"`
+}
+
+type Argon2 struct {
+	Memory      uint32
+	Iterations  uint32
+	Parallelism uint8
+	SaltLength  uint32
+	KeyLength   uint32
 }
 
 type Database struct {

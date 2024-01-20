@@ -1,37 +1,128 @@
 package util
 
 import (
+	"regexp"
+	"runtime"
+	"strings"
 	"testing"
 )
 
-func TestArgon2idHashGenerateHashAndCompare(t *testing.T) {
-	time := uint32(1)
-	saltLen := uint32(16)
-	memory := uint32(64 * 1024) // 64MB
-	threads := uint8(4)
-	keyLen := uint32(32)
+var DefaultParams = &Argon2{
+	Memory:      64 * 1024,
+	Iterations:  1,
+	Parallelism: uint8(runtime.NumCPU()),
+	SaltLength:  16,
+	KeyLength:   32,
+}
 
-	argon2idHash := NewArgon2idHash(time, saltLen, memory, threads, keyLen)
-
-	// Test case 1: Generate hash and compare
-	password := []byte("password123")
-	salt := []byte("randomsalt")
-	hashSalt, err := argon2idHash.GenerateHash(password, salt)
+func TestCreateHash(t *testing.T) {
+	hashRX, err := regexp.Compile(`^\$argon2id\$v=19\$m=65536,t=1,p=[0-9]{1,4}\$[A-Za-z0-9+/]{22}\$[A-Za-z0-9+/]{43}$`)
 	if err != nil {
-		t.Errorf("Error generating hash: %v", err)
+		t.Fatal(err)
 	}
 
-	err = argon2idHash.Compare(hashSalt.Hash, hashSalt.Salt, password)
+	hash1, err := CreateHash("pa$$word", DefaultParams)
 	if err != nil {
-		t.Errorf("Error comparing hash: %v", err)
+		t.Fatal(err)
 	}
 
-	// Test case 2: Compare with incorrect password
-	incorrectPassword := []byte("incorrect123")
-	err = argon2idHash.Compare(hashSalt.Hash, hashSalt.Salt, incorrectPassword)
+	if !hashRX.MatchString(hash1) {
+		t.Errorf("hash %q not in correct format", hash1)
+	}
+
+	hash2, err := CreateHash("pa$$word", DefaultParams)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if strings.Compare(hash1, hash2) == 0 {
+		t.Error("hashes must be unique")
+	}
+}
+
+func TestComparePasswordAndHash(t *testing.T) {
+	hash, err := CreateHash("pa$$word", DefaultParams)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	match, err := ComparePasswordAndHash("pa$$word", hash)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !match {
+		t.Error("expected password and hash to match")
+	}
+
+	match, err = ComparePasswordAndHash("otherPa$$word", hash)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if match {
+		t.Error("expected password and hash to not match")
+	}
+}
+
+func TestDecodeHash(t *testing.T) {
+	hash, err := CreateHash("pa$$word", DefaultParams)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	params, _, _, err := DecodeHash(hash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if *params != *DefaultParams {
+		t.Fatalf("expected %#v got %#v", *DefaultParams, *params)
+	}
+}
+
+func TestCheckHash(t *testing.T) {
+	hash, err := CreateHash("pa$$word", DefaultParams)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ok, params, err := CheckHash("pa$$word", hash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !ok {
+		t.Fatal("expected password to match")
+	}
+	if *params != *DefaultParams {
+		t.Fatalf("expected %#v got %#v", *DefaultParams, *params)
+	}
+}
+
+func TestStrictDecoding(t *testing.T) {
+	// "bug" valid hash: $argon2id$v=19$m=65536,t=1,p=2$UDk0zEuIzbt0x3bwkf8Bgw$ihSfHWUJpTgDvNWiojrgcN4E0pJdUVmqCEdRZesx9tE
+	ok, _, err := CheckHash("bug", "$argon2id$v=19$m=65536,t=1,p=2$UDk0zEuIzbt0x3bwkf8Bgw$ihSfHWUJpTgDvNWiojrgcN4E0pJdUVmqCEdRZesx9tE")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !ok {
+		t.Fatal("expected password to match")
+	}
+
+	// changed one last character of the hash
+	ok, _, err = CheckHash("bug", "$argon2id$v=19$m=65536,t=1,p=2$UDk0zEuIzbt0x3bwkf8Bgw$ihSfHWUJpTgDvNWiojrgcN4E0pJdUVmqCEdRZesx9tF")
 	if err == nil {
-		t.Error("Expected error for mismatched password, but got nil")
-	} else if err.Error() != "hash doesn't match" {
-		t.Errorf("Expected 'hash doesn't match' error, but got: %v", err)
+		t.Fatal("Hash validation should fail")
+	}
+
+	if ok {
+		t.Fatal("Hash validation should fail")
+	}
+}
+
+func TestVariant(t *testing.T) {
+	// Hash contains wrong variant
+	_, _, err := CheckHash("pa$$word", "$argon2i$v=19$m=65536,t=1,p=2$mFe3kxhovyEByvwnUtr0ow$nU9AqnoPfzMOQhCHa9BDrQ+4bSfj69jgtvGu/2McCxU")
+	if err != ErrIncompatibleVariant {
+		t.Fatalf("expected error %s", ErrIncompatibleVariant)
 	}
 }
