@@ -1,9 +1,15 @@
 package main
 
 import (
+	"context"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
+	"log"
 	_ "monero-shop-api/docs"
+	"monero-shop-api/internal/adapter/postgres"
+	"monero-shop-api/internal/core/util"
+	"monero-shop-api/internal/exception"
+	"os"
 )
 
 // @title Fiber Example API
@@ -17,6 +23,27 @@ import (
 // @host localhost:8000
 // @BasePath /
 func main() {
+	// Init config
+	config := util.New().Get()
+	// Init logger
+	logFile, err := os.OpenFile("log", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+
+	exception.PanicLogging(err)
+
+	defer logFile.Close()
+
+	// Set log out put and enjoy :)
+	log.SetOutput(logFile)
+
+	// optional: log date-time, filename, and line number
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	// Init database
+	ctx := context.Background()
+	db, err := postgres.New(ctx, &config)
+	exception.PanicLogging(err)
+
+	defer db.Close()
+
 	app := fiber.New()
 
 	app.Get("/swagger/*", swagger.HandlerDefault) // default
