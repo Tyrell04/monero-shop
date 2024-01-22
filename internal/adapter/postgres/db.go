@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"monero-shop-api/internal/core/util"
+	"monero-shop-api/internal/adapter/config"
 )
 
 /*
@@ -20,7 +20,7 @@ type DB struct {
 }
 
 // New creates a new PostgreSQL database instance
-func New(ctx context.Context, config *util.Config) (*DB, error) {
+func New(ctx context.Context, config *config.Config) (*DB, error) {
 	dsn := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable",
 		config.Database.User,
 		config.Database.Password,

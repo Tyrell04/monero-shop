@@ -6,8 +6,8 @@ import (
 	"github.com/gofiber/swagger"
 	"log"
 	_ "monero-shop-api/docs"
+	"monero-shop-api/internal/adapter/config"
 	"monero-shop-api/internal/adapter/postgres"
-	"monero-shop-api/internal/core/util"
 	"monero-shop-api/internal/exception"
 	"os"
 )
@@ -24,7 +24,7 @@ import (
 // @BasePath /
 func main() {
 	// Init config
-	config := util.New().Get()
+	config := config.New().Get()
 	// Init logger
 	logFile, err := os.OpenFile("log", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
 

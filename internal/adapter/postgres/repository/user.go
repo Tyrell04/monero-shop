@@ -3,19 +3,19 @@ package repository
 import (
 	"context"
 	"github.com/google/uuid"
+	"monero-shop-api/internal/adapter/config"
 	"monero-shop-api/internal/adapter/postgres"
 	"monero-shop-api/internal/core/domain"
-	"monero-shop-api/internal/core/util"
 )
 
 // UserRepository implements port.UserRepository interface and provides an access to the postgres database
 type UserRepository struct {
 	db     *postgres.DB
-	config *util.Config
+	config *config.Config
 }
 
 // NewUserRepository creates a new user repository instance
-func NewUserRepository(db *postgres.DB, config *util.Config) *UserRepository {
+func NewUserRepository(db *postgres.DB, config *config.Config) *UserRepository {
 	return &UserRepository{
 		db,
 		config,

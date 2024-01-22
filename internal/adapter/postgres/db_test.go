@@ -3,14 +3,14 @@ package postgres
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"monero-shop-api/internal/core/util"
+	"monero-shop-api/internal/adapter/config"
 	"testing"
 )
 
 func TestNew(t *testing.T) {
 	// Mock configuration
-	config := util.Config{
-		Database: util.Database{
+	config := config.Config{
+		Database: config.Database{
 			Name:     "postgres",
 			Password: "postgres",
 			Host:     "localhost",
@@ -36,8 +36,8 @@ func TestNew(t *testing.T) {
 
 func TestClose(t *testing.T) {
 	// Mock configuration
-	config := util.Config{
-		Database: util.Database{
+	config := config.Config{
+		Database: config.Database{
 			Name:     "postgres",
 			Password: "postgres",
 			Host:     "localhost",

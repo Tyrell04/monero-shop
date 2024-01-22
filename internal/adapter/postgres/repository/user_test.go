@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"monero-shop-api/internal/adapter/config"
 	"monero-shop-api/internal/adapter/postgres"
 	"monero-shop-api/internal/core/domain"
 	"monero-shop-api/internal/core/util"
@@ -9,8 +10,8 @@ import (
 )
 
 func dbSetup(con context.Context) (*postgres.DB, error) {
-	db, err := postgres.New(con, &util.Config{
-		Database: util.Database{
+	db, err := postgres.New(con, &config.Config{
+		Database: config.Database{
 			Name:     "postgres",
 			Password: "postgres",
 			Host:     "localhost",

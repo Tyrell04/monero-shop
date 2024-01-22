@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"monero-shop-api/internal/adapter/config"
 	"strings"
 
 	"golang.org/x/crypto/argon2"
@@ -32,7 +33,7 @@ var (
 // derived key prefixed by the salt and parameters. It looks like this:
 //
 //	$argon2id$v=19$m=65536,t=3,p=2$c29tZXNhbHQ$RdescudvJCsgt3ub+b+dWRWJTmaaJObG
-func CreateHash(password string, params *Argon2) (hash string, err error) {
+func CreateHash(password string, params *config.Argon2) (hash string, err error) {
 	salt, err := generateRandomBytes(params.SaltLength)
 	if err != nil {
 		return "", err
@@ -59,7 +60,7 @@ func ComparePasswordAndHash(password, hash string) (match bool, err error) {
 // CheckHash is like ComparePasswordAndHash, except it also returns the params that the hash was
 // created with. This can be useful if you want to update your hash params over time (which you
 // should).
-func CheckHash(password, hash string) (match bool, params *Argon2, err error) {
+func CheckHash(password, hash string) (match bool, params *config.Argon2, err error) {
 	params, salt, key, err := DecodeHash(hash)
 	if err != nil {
 		return false, nil, err
@@ -91,7 +92,7 @@ func generateRandomBytes(n uint32) ([]byte, error) {
 
 // DecodeHash expects a hash created from this package, and parses it to return the params used to
 // create it, as well as the salt and key (password hash).
-func DecodeHash(hash string) (params *Argon2, salt, key []byte, err error) {
+func DecodeHash(hash string) (params *config.Argon2, salt, key []byte, err error) {
 	vals := strings.Split(hash, "$")
 	if len(vals) != 6 {
 		return nil, nil, nil, ErrInvalidHash
@@ -110,7 +111,7 @@ func DecodeHash(hash string) (params *Argon2, salt, key []byte, err error) {
 		return nil, nil, nil, ErrIncompatibleVersion
 	}
 
-	params = &Argon2{}
+	params = &config.Argon2{}
 	_, err = fmt.Sscanf(vals[3], "m=%d,t=%d,p=%d", &params.Memory, &params.Iterations, &params.Parallelism)
 	if err != nil {
 		return nil, nil, nil, err

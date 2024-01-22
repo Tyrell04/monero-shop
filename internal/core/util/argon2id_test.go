@@ -1,13 +1,14 @@
 package util
 
 import (
+	"monero-shop-api/internal/adapter/config"
 	"regexp"
 	"runtime"
 	"strings"
 	"testing"
 )
 
-var DefaultParams = &Argon2{
+var DefaultParams = &config.Argon2{
 	Memory:      64 * 1024,
 	Iterations:  1,
 	Parallelism: uint8(runtime.NumCPU()),
